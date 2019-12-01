@@ -1,0 +1,23 @@
+name:                AdventOfCode2019
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/CarstenKoenig/AdventOfCode2019#readme
+license:             BSD3
+author:              Carsten König
+maintainer:          Carsten@gettingsharper.de
+copyright:           Carsten König
+category:            Your Projects Category
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - containers
+  - megaparsec
+  - mtl
+
+executables:
+  AdventOfCode2019:
+    source-dirs:      src
+    main:             Main.hs
