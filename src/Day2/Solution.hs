@@ -1,4 +1,6 @@
-module Day2 where
+module Day2.Solution
+  ( run
+  ) where
 
 import Data.List (unfoldr)
 
@@ -20,4 +22,4 @@ run = do
 
 
 loadInput :: IO Input
-loadInput = readFile "./src/day2.txt"
+loadInput = readFile "./src/Day2/input.txt"

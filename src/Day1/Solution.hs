@@ -1,4 +1,6 @@
-module Day1 where
+module Day1.Solution 
+  ( run
+  ) where
 
 import Data.List (unfoldr)
 
@@ -69,4 +71,4 @@ fuelMass = id
 
 -- | loads the input - each line contains a single number (the mass of a module)
 loadInput :: IO Input
-loadInput = fmap read . lines <$> readFile "./src/day1.txt"
+loadInput = fmap read . lines <$> readFile "./src/Day1/input.txt"
