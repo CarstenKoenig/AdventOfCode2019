@@ -31,12 +31,25 @@ part1 prg =
 --   initial Value for _noun_=0, _verb_=0 was 250635
 part2 :: Int
 part2 =
-  let tgt = 19690720
-      partNoun = tgt `div` 1000  
+  let partNoun = part2TargetNumber `div` 1000  
       solNoun = (partNoun - 250) `div` 360
-      partVerb = tgt `mod` 1000
+      partVerb = part2TargetNumber `mod` 1000
       solVerb = partVerb - 635
   in solNoun * 100 + solVerb
+
+
+-- | brute forcing part2 by enumerating and checking all the combinations
+--   of noun/verb each in the range 0 to 99
+part2BruteForce :: Program -> Int
+part2BruteForce prg = head
+  [ 100 * noun + verb | noun <- [0..99]
+                      , verb <- [0..99]
+                      , runPair prg noun verb == Right part2TargetNumber 
+  ]
+
+
+part2TargetNumber :: Int
+part2TargetNumber = 19690720
 
 
 -- | used via REPL to get some clues for 'part2'
