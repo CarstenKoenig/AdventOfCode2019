@@ -2,6 +2,7 @@ module Day3.Solution where
 
 import           CommonParsers
 import           ConsoleTests
+import           Coords
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import qualified Text.Megaparsec as P
@@ -39,9 +40,7 @@ part2 =
 ----------------------------------------------------------------------
 -- Algorithms
 
-type Coord = (Int, Int)
 type PathLenght = Int
-type Dist = Int
 
 data Move
   = GoUp Dist
@@ -49,10 +48,6 @@ data Move
   | GoLeft Dist
   | GoRight Dist
   deriving (Show)
-
-
-manhDist :: Coord -> Coord -> Dist
-manhDist (x,y) (x',y') = abs (x'-x) + abs (y'-y)
 
 
 -- | calculates a new coord after a move
