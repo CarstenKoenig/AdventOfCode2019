@@ -1,4 +1,4 @@
-module Day4.Solution where
+module Day5.Solution where
 
 import           CommonParsers
 import           ConsoleTests
@@ -8,7 +8,7 @@ type Input = String
 
 run :: IO ()
 run = do
-  putStrLn "DAY 4"
+  putStrLn "DAY 5"
 
   inp <- loadInput
 
@@ -22,14 +22,12 @@ run = do
 
 
 part1 :: Input -> Int
-part1 inp = 0
+part1 inp = undefined
 
 
 part2 :: Input -> Int
-part2 inp = 0
+part2 inp = undefined
 
 
 loadInput :: IO Input
-loadInput = 
-  pure "not ready"
-  -- readFile "./src/Day4/input.txt"
+loadInput = readFile "./src/Day5/input.txt"
