@@ -1,6 +1,6 @@
 module Day2.Solution where
 
-import           IntCode
+import           IntCodeV1
 
 run :: IO ()
 run = do

@@ -1,6 +1,7 @@
 module Day5.Solution where
 
 import           CommonParsers
+import           IntCode
 import           ConsoleTests
 
 
@@ -10,24 +11,27 @@ run :: IO ()
 run = do
   putStrLn "DAY 5"
 
-  inp <- loadInput
+  prg <- loadProgram
 
-  let res1 = part1 inp
+  let res1 = part1 prg
   putStrLn $ "\t Part 1: " ++ show res1
 
-  let res2 = part2 inp
+  let res2 = part2 prg
   putStrLn $ "\t Part 2: " ++ show res2
 
   putStrLn "---\n"
 
 
-part1 :: Input -> Int
-part1 inp = undefined
+part1 :: Program -> Either String [Int]
+part1 mem =
+  eval mem [1] $ do
+    runComputer
+    getOutputs
 
 
-part2 :: Input -> Int
-part2 inp = undefined
+part2 :: Program -> Int
+part2 inp = 0
 
 
-loadInput :: IO Input
-loadInput = readFile "./src/Day5/input.txt"
+loadProgram :: IO Program
+loadProgram = parseProgram <$> readFile "./src/Day5/input.txt"
