@@ -1,11 +1,6 @@
-module Day5.Solution where
+module Day5.Solution (run) where
 
-import           CommonParsers
 import           IntCode
-import           ConsoleTests
-
-
-type Input = String
 
 run :: IO ()
 run = do

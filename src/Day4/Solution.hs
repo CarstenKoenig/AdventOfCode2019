@@ -1,4 +1,4 @@
-module Day4.Solution where
+module Day4.Solution (run) where
 
 import Control.Monad (guard)
 import Data.List (group, elem)

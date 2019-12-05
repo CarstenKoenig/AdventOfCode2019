@@ -1,4 +1,4 @@
-module Day2.Solution where
+module Day2.Solution (run) where
 
 import           IntCode
 

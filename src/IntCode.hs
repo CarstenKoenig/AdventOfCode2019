@@ -10,14 +10,17 @@ module IntCode
   , getMemory
   , setMemory
   , getOutputs
+  , showProgram
   ) where
 
+import           Control.Monad (forM_)
 import           Control.Monad.State.Strict (StateT, MonadState)
 import qualified Control.Monad.State.Strict as State
 import           Control.Monad.Except (MonadError, Except)
 import qualified Control.Monad.Except as Except
 import           Data.IntMap (IntMap)
 import qualified Data.IntMap as Map
+import           Data.List (intercalate)
 
 
 type Address = Int
@@ -111,6 +114,40 @@ runComputer = do
   case opCode instr of
     Halt -> pure ()
     _ -> runInstruction instr >> runComputer
+
+
+-- | formats the current program into a string - stops on error
+showProgram :: Program -> String
+showProgram prg = 
+  case eval prg [] parseMemory of
+    Left err -> "ERROR: " ++ err
+    Right listing -> unlines $ map showInstr listing
+  where
+    showInstr (Instruction opCode params) =
+      show opCode ++ "(" ++ intercalate "," (map showParam params) ++ ")"
+    showParam (Parameter PositionMode v) = "&" ++ show v
+    showParam (Parameter ImmediateMode v) = show v
+
+
+-- | parses the current memory configuration into a list of instructions
+--   for debugging / reading
+parseMemory :: IntCodeM m => m [Instruction]
+parseMemory = do
+  (lower, upper) <- memoryBounds
+  go lower upper
+  where
+    go current upper | current > upper = pure []
+    go current upper = do
+      instr <- tryGetInstr current
+      case instr of
+        Nothing -> pure []
+        Just instruction -> do
+          let len = instructionLength instruction
+          rest <- go (current + len) upper
+          pure (instruction : rest)
+    tryGetInstr :: IntCodeM m => Address -> m (Maybe Instruction)
+    tryGetInstr adr =
+      flip Except.catchError (\_ -> pure Nothing) $ Just <$> getInstruction adr
 
 
 -- | runs a single instruction according to the specifications of Day2 cc
@@ -238,6 +275,15 @@ getMemory adr = do
 setMemory :: MonadState Computer m => Address -> Int -> m ()
 setMemory adr val = 
   State.modify (\prg -> prg { memory = Map.insert adr val (memory prg) })
+
+
+-- | get's the lowest and higest valid address in memory
+memoryBounds :: IntCodeM m => m (Address, Address)
+memoryBounds = do
+  lower <- State.gets (fmap fst . Map.lookupMin . memory)
+  upper <- State.gets (fmap fst . Map.lookupMax . memory)
+  let bounds = (,) <$> lower <*> upper
+  maybe (Except.throwError "memory is empty") pure bounds
 
 
 -- | pops the next value from the input-stack and returns it

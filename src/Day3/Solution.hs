@@ -1,4 +1,4 @@
-module Day3.Solution where
+module Day3.Solution (run) where
 
 import           CommonParsers
 import           ConsoleTests
