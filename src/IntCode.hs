@@ -158,30 +158,30 @@ runInstruction Instruction{ opCode = Halt } =
 runInstruction Instruction{ opCode = Add, parameters = [locA, locB, Parameter PositionMode locTgt] } = do
   -- add the value in from the first two given parameters and
   -- write the result to the third's address (only valid if it is in 'PositionMode')
-  operandA <- readParameter locA
-  operandB <- readParameter locB
+  operandA <- evalParameter locA
+  operandB <- evalParameter locB
   setMemory locTgt (operandA + operandB)
   moveNext
 runInstruction Instruction{ opCode = Mult, parameters = [locA, locB, Parameter PositionMode locTgt] } = do
   -- multiplies the value in from the first two given parameters and
   -- write the result to the third's address (only valid if it is in 'PositionMode')
-  operandA <- readParameter locA
-  operandB <- readParameter locB
+  operandA <- evalParameter locA
+  operandB <- evalParameter locB
   setMemory locTgt (operandA * operandB)
   moveNext
 runInstruction Instruction{ opCode = JumpIfTrue, parameters = [cond, loc] } = do
   -- jumps to the address of the second parameter if the value of the first is
   -- non-zero - if not just moves to the next instruction
-  condVal <- readParameter cond
-  jumpAdr <- readParameter loc
+  condVal <- evalParameter cond
+  jumpAdr <- evalParameter loc
   if condVal == 0 
     then moveNext
     else jumpTo jumpAdr
 runInstruction Instruction{ opCode = JumpIfFalse, parameters = [cond, loc] } = do
   -- jumps to the address of the second parameter if the value of the first is
   -- zero - if not just moves to the next instruction
-  condVal <- readParameter cond
-  jumpAdr <- readParameter loc
+  condVal <- evalParameter cond
+  jumpAdr <- evalParameter loc
   if condVal == 0 
     then jumpTo jumpAdr
     else moveNext
@@ -189,8 +189,8 @@ runInstruction Instruction{ opCode = LessThan, parameters = [a, b, Parameter Pos
   -- compares parameter-values of the first and second parameter
   -- writes 1 to the address of the last parameter if the first value is less than the second
   -- if not writes 0
-  aVal <- readParameter a
-  bVal <- readParameter b
+  aVal <- evalParameter a
+  bVal <- evalParameter b
   let res = if aVal < bVal then 1 else 0
   setMemory locTgt res
   moveNext
@@ -198,8 +198,8 @@ runInstruction Instruction{ opCode = Equals, parameters = [a, b, Parameter Posit
   -- compares parameter-values of the first and second parameter
   -- writes 1 to the address of the last parameter if the first value is equal to the second
   -- if not writes 0
-  aVal <- readParameter a
-  bVal <- readParameter b
+  aVal <- evalParameter a
+  bVal <- evalParameter b
   let res = if aVal == bVal then 1 else 0
   setMemory locTgt res
   moveNext
@@ -211,7 +211,7 @@ runInstruction Instruction{ opCode = Input, parameters = [Parameter PositionMode
   moveNext
 runInstruction Instruction{ opCode = Output, parameters = [from] } = do
   -- gets the value from the parameter and writes it to the "output" stream
-  out <- readParameter from
+  out <- evalParameter from
   writeOutput out
   moveNext
 runInstruction inst =
@@ -256,10 +256,13 @@ getInstruction adr = do
     
 
 
--- | reads the memory value at the given address
-readParameter :: IntCodeM m => Parameter -> m Int
-readParameter (Parameter ImmediateMode v) = pure v
-readParameter (Parameter PositionMode adr) = getMemory adr
+-- | evaluates the parameter against the current memory content
+--   if it's an 'ImmediateMode' parameter it's just it's value
+--   if it's an 'PositionMode' parameter it's the memory content of the address
+--   = the parameters value
+evalParameter :: IntCodeM m => Parameter -> m Int
+evalParameter (Parameter ImmediateMode v) = pure v
+evalParameter (Parameter PositionMode adr) = getMemory adr
 
 
 -- | reads the memory value at the given address
