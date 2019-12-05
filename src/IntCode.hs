@@ -1,5 +1,6 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module IntCode 
   ( Program, Computer
@@ -237,30 +238,43 @@ getInstruction address = do
   (opCode, modes) <- parseInstrCode <$> getMemory address
   case opCode of
     99 -> pure Halt
-    1  -> getParams 3 (address+1) modes >>= (\[a,b,c] -> pure $ Add a b c)
-    2  -> getParams 3 (address+1) modes >>= (\[a,b,c] -> pure $ Mult a b c)
-    3  -> getParams 1 (address+1) modes >>= (\[a] -> pure $ Input a)
-    4  -> getParams 1 (address+1) modes >>= (\[a] -> pure $ Output a)
-    5  -> getParams 2 (address+1) modes >>= (\[a,b] -> pure $ JumpIfTrue a b)
-    6  -> getParams 2 (address+1) modes >>= (\[a,b] -> pure $ JumpIfFalse a b)
-    7  -> getParams 3 (address+1) modes >>= (\[a,b,c] -> pure $ LessThan a b c)
-    8  -> getParams 3 (address+1) modes >>= (\[a,b,c] -> pure $ Equals a b c)
+    1  -> readInstruction' Add modes
+    2  -> readInstruction' Mult modes
+    3  -> readInstruction' Input modes
+    4  -> readInstruction' Output modes
+    5  -> readInstruction' JumpIfTrue modes
+    6  -> readInstruction' JumpIfFalse modes
+    7  -> readInstruction' LessThan modes
+    8  -> readInstruction' Equals modes
     _ -> Except.throwError $ "unknown opcode " ++ show opCode
   where
+    readInstruction' i modes = (\(_,_,x) -> x) <$> readInstruction i (address+1) modes
     parseInstrCode code =
       let opCode = code `mod` 100
           modes  = code `div` 100
       in (opCode, modes)
-    getParams :: IntCodeM m => Int -> Address -> Int -> m [Parameter]
-    getParams 0 _ _ = pure []
-    getParams n adr modes = do
-      value <- getMemory adr
-      mode <- parameterModeFromInt (modes `mod` 10)
-      let param = Parameter mode value
-      rest <- getParams (n-1) (adr+1) (modes `div` 10)
-      pure (param:rest)
-    
+   
+------------------------------------------------------------
+-- small helper class to help the compiler figure out the
+-- actual parameters-count while parsing for us
 
+class ReadInstruction i where
+  readInstruction :: IntCodeM m => i -> Address -> Int -> m (Address, Int, Instruction)
+
+instance ReadInstruction Instruction where
+  readInstruction i adr modes = pure (adr, modes, i)
+
+instance ReadInstruction i => ReadInstruction (Parameter -> i) where
+  readInstruction p2i adr modes = do
+    p <- readParam
+    readInstruction (p2i p) (adr+1) (modes `div` 10)
+    where
+      readParam = do
+        value <- getMemory adr
+        mode <- parameterModeFromInt (modes `mod` 10)
+        pure $ Parameter mode value
+
+------------------------------------------------------------
 
 -- | evaluates the parameter against the current memory content
 --   if it's an 'ImmediateMode' parameter it's just it's value
