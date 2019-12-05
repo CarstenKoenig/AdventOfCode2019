@@ -1,6 +1,6 @@
 module Day2.Solution where
 
-import           IntCodeV1
+import           IntCode
 
 run :: IO ()
 run = do
@@ -56,7 +56,7 @@ part2TargetNumber = 19690720
 --   the first parameter is called _noun_ in the problem and is set to mem-adr 1
 --   the second parameter is called _verb in the problem and is set to mem-adr 2
 runPair :: Program -> Int -> Int -> Either String Int
-runPair prg noun verb = eval prg $ do
+runPair prg noun verb = eval prg [] $ do
   setMemory 1 noun
   setMemory 2 verb
   runComputer

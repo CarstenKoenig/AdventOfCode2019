@@ -34,38 +34,55 @@ data Computer = Computer
 ----------------------------------------------------------------------
 -- OpCode and Instructions
 
+-- | a parsed instruction for our little computer
+--   the op-code determins the action 
+--   and the parameters are the input for this action 
+data Instruction = Instruction
+  { opCode        :: OpCode 
+  , parameters    :: [Parameter]
+  } deriving (Show)
+
+
+-- | our computers command-set
 data OpCode
   = Halt
   | Add
   | Mult
   | Input
   | Output
+  | JumpIfTrue
+  | JumpIfFalse
+  | LessThan
+  | Equals
   deriving (Show)
 
-data ParameterMode
-  = PositionMode
-  | ImmediateMode
-  deriving (Show, Eq)
 
-parameterModeFromInt :: MonadError String m => Int -> m ParameterMode
-parameterModeFromInt 0 = pure PositionMode
-parameterModeFromInt 1 = pure ImmediateMode
-parameterModeFromInt m = Except.throwError $ "invalid parameter-mode " ++ show m
-
-
-data Instruction = Instruction
-  { opCode        :: OpCode
-  , parameters    :: [Parameter]
-  } deriving (Show)
-
-
+-- | a parameter for an instruction
+--   each parameter has a mode and a value
+--   the mode flags if the value is to be interpreted as an address or as an value
 data Parameter = Parameter
   { parameterMode  :: ParameterMode
   , parameterValue :: Int
   } deriving (Show)
 
 
--- | determins the length of an instruction
+-- | the position mode determins if a parameter is
+--   interpreted as a pointer to a location ('PositionMode')
+--   or as an actual constant value ('ImmediateMode')
+data ParameterMode
+  = PositionMode
+  | ImmediateMode
+  deriving (Show, Eq)
+
+
+-- | parses the parameter mode from the numbers given in the problem/description
+parameterModeFromInt :: MonadError String m => Int -> m ParameterMode
+parameterModeFromInt 0 = pure PositionMode
+parameterModeFromInt 1 = pure ImmediateMode
+parameterModeFromInt m = Except.throwError $ "invalid parameter-mode " ++ show m
+
+
+-- | calculates the length of an instruction
 --   so that we can move the instruction-pointer to the next one
 instructionLength :: Instruction -> Int
 instructionLength Instruction { opCode = _, parameters = ps } = 1 + length ps
@@ -79,6 +96,8 @@ instructionLength Instruction { opCode = _, parameters = ps } = 1 + length ps
 type IntCodeM m = (MonadError String m, MonadState Computer m)
 
 -- | evaluates an action in our 'IntCodeM' monad using the given program
+--   the second parameter 'inputs' is stored as the input-stack for the
+--   computer (inputs will be pulled from this list left to right)
 eval :: Program -> [Int] -> StateT Computer (Except String) a -> Either String a
 eval prg inputs act = 
   let computer = Computer (Map.fromList $ zip [0..] prg) 0 inputs []
@@ -100,24 +119,61 @@ runInstruction Instruction{ opCode = Halt } =
   -- no-op on halt
   pure ()
 runInstruction Instruction{ opCode = Add, parameters = [locA, locB, Parameter PositionMode locTgt] } = do
-  -- add the value in the addresses given by the first 2 parameters and
-  -- write the result to the third
+  -- add the value in from the first two given parameters and
+  -- write the result to the third's address (only valid if it is in 'PositionMode')
   operandA <- readParameter locA
   operandB <- readParameter locB
   setMemory locTgt (operandA + operandB)
   moveNext
 runInstruction Instruction{ opCode = Mult, parameters = [locA, locB, Parameter PositionMode locTgt] } = do
-  -- multiply the value in the addresses given by the first 2 parameters and
-  -- write the result to the third
+  -- multiplies the value in from the first two given parameters and
+  -- write the result to the third's address (only valid if it is in 'PositionMode')
   operandA <- readParameter locA
   operandB <- readParameter locB
   setMemory locTgt (operandA * operandB)
   moveNext
+runInstruction Instruction{ opCode = JumpIfTrue, parameters = [cond, loc] } = do
+  -- jumps to the address of the second parameter if the value of the first is
+  -- non-zero - if not just moves to the next instruction
+  condVal <- readParameter cond
+  jumpAdr <- readParameter loc
+  if condVal == 0 
+    then moveNext
+    else jumpTo jumpAdr
+runInstruction Instruction{ opCode = JumpIfFalse, parameters = [cond, loc] } = do
+  -- jumps to the address of the second parameter if the value of the first is
+  -- zero - if not just moves to the next instruction
+  condVal <- readParameter cond
+  jumpAdr <- readParameter loc
+  if condVal == 0 
+    then jumpTo jumpAdr
+    else moveNext
+runInstruction Instruction{ opCode = LessThan, parameters = [a, b, Parameter PositionMode locTgt] } = do
+  -- compares parameter-values of the first and second parameter
+  -- writes 1 to the address of the last parameter if the first value is less than the second
+  -- if not writes 0
+  aVal <- readParameter a
+  bVal <- readParameter b
+  let res = if aVal < bVal then 1 else 0
+  setMemory locTgt res
+  moveNext
+runInstruction Instruction{ opCode = Equals, parameters = [a, b, Parameter PositionMode locTgt] } = do
+  -- compares parameter-values of the first and second parameter
+  -- writes 1 to the address of the last parameter if the first value is equal to the second
+  -- if not writes 0
+  aVal <- readParameter a
+  bVal <- readParameter b
+  let res = if aVal == bVal then 1 else 0
+  setMemory locTgt res
+  moveNext
 runInstruction Instruction{ opCode = Input, parameters = [Parameter PositionMode toLoc] } = do
+  -- reads the next input from the input "stream"
+  -- and writes it to the address of the parameter
   inp <- readInput
   setMemory toLoc inp
   moveNext
 runInstruction Instruction{ opCode = Output, parameters = [from] } = do
+  -- gets the value from the parameter and writes it to the "output" stream
   out <- readParameter from
   writeOutput out
   moveNext
@@ -143,6 +199,10 @@ getInstruction adr = do
     2  -> Instruction Mult <$> getParams 3 (adr+1) modes
     3  -> Instruction Input <$> getParams 1 (adr+1) modes
     4  -> Instruction Output <$> getParams 1 (adr+1) modes
+    5  -> Instruction JumpIfTrue <$> getParams 2 (adr+1) modes
+    6  -> Instruction JumpIfFalse <$> getParams 2 (adr+1) modes
+    7  -> Instruction LessThan <$> getParams 3 (adr+1) modes
+    8  -> Instruction Equals <$> getParams 3 (adr+1) modes
     _ -> Except.throwError $ "unknown opcode " ++ show opCode
   where
     parseInstrCode code =
@@ -180,6 +240,8 @@ setMemory adr val =
   State.modify (\prg -> prg { memory = Map.insert adr val (memory prg) })
 
 
+-- | pops the next value from the input-stack and returns it
+--   if no more values are on it fails with an error
 readInput :: IntCodeM m => m Int
 readInput = do
   inputs <- State.gets inputStore
@@ -190,17 +252,26 @@ readInput = do
       pure inp
 
 
+-- | pushes the value to the output-stack
 writeOutput :: MonadState Computer m => Int -> m ()
 writeOutput out = 
   State.modify (\s -> s { outputStore = out : outputStore s })
 
 
+-- | returns the current values from the output-stack
+--   in "first-in-first-out" order
 getOutputs :: MonadState Computer m => m [Int]
 getOutputs = State.gets (reverse . outputStore)
+
 
 -- | gets the current instruction pointer
 getInstructionPointer :: MonadState Computer m => m Address
 getInstructionPointer = State.gets instructionPointer
+
+
+-- | jumps to the given address by setting the instruction pointer to it
+jumpTo :: IntCodeM m => Address -> m ()
+jumpTo = setInstructionPointer 
 
 
 -- | moves the instruction-pointer to the next instruction after the current

@@ -14,23 +14,27 @@ run = do
   prg <- loadProgram
 
   let res1 = part1 prg
-  putStrLn $ "\t Part 1: " ++ show res1
+  putStrLn $ "\t Part 1: " ++ either ("ERROR: " ++) show res1
 
   let res2 = part2 prg
-  putStrLn $ "\t Part 2: " ++ show res2
+  putStrLn $ "\t Part 2: " ++ either ("ERROR: " ++ ) show res2
 
   putStrLn "---\n"
 
 
-part1 :: Program -> Either String [Int]
-part1 mem =
-  eval mem [1] $ do
+part1 :: Program -> Either String Int
+part1 prg = last <$> runPrg 1 prg
+
+
+part2 :: Program -> Either String Int
+part2 prg = last <$> runPrg 5 prg
+
+
+runPrg :: Int -> Program -> Either String [Int]
+runPrg inp mem =
+  eval mem [inp] $ do
     runComputer
     getOutputs
-
-
-part2 :: Program -> Int
-part2 inp = 0
 
 
 loadProgram :: IO Program
