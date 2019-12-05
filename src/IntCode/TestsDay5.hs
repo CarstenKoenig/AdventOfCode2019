@@ -1,8 +1,8 @@
 
 module IntCode.TestsDay5 (run) where
 
-import           ConsoleTests
-import           IntCode
+import ConsoleTests
+import IntCode
 
 
 run :: IO ()
@@ -43,11 +43,11 @@ tests = do
 assert :: String -> String -> [Int] -> Int -> IO ()
 assert label testPrg inps expected = do
   let prg = parseProgram testPrg
-      value = last <$> run prg
+      value = last <$> runOutputs prg
   value `shouldEq` Right expected
   where 
     shouldEq = shouldEqual label
-    run prg =
+    runOutputs prg =
       eval prg inps $ do
         runComputer
         getOutputs

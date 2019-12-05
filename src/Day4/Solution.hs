@@ -41,9 +41,9 @@ enumSolutions additionalGuard = do
   d4 <- [d3..9]
   d5 <- [d4..9]
   d6 <- [d5..9]
-  let digits = [d1,d2,d3,d4,d5,d6]
-  let number = digitsToNumber digits
-  guard (lowerBound <= number && number <= upperBound && additionalGuard digits)
+  let ds = [d1,d2,d3,d4,d5,d6]
+  let number = digitsToNumber ds
+  guard (lowerBound <= number && number <= upperBound && additionalGuard ds)
   pure number
   where
     (lowerBound, upperBound) = myInput

@@ -17,6 +17,10 @@ dependencies:
   - megaparsec
   - mtl
 
+ghc-options:
+  - -Wall
+  - -Wno-unused-top-binds
+
 executables:
   AdventOfCode2019:
     source-dirs:      src

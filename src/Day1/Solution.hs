@@ -41,8 +41,8 @@ requiredFuelForFuel :: Fuel -> Fuel
 requiredFuelForFuel fuel = sum $ additionalFuelSeq fuel
   where
     additionalFuelSeq = unfoldr requiredForFuelMass
-    requiredForFuelMass fuel =
-      let req = requiredFuelForMass (fuelMass fuel)
+    requiredForFuelMass f =
+      let req = requiredFuelForMass (fuelMass f)
       in if req <= 0 then Nothing else Just (req, req)
 
 
