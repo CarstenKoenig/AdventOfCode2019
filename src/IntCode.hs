@@ -20,7 +20,6 @@ import qualified Control.Monad.State.Strict as State
 import           Control.Monad.State.Strict (StateT, MonadState)
 import qualified Data.IntMap as Map
 import           Data.IntMap (IntMap)
-import           Data.List (intercalate)
 
 
 type Address = Int
@@ -80,14 +79,14 @@ parameterModeFromInt m = Except.throwError $ "invalid parameter-mode " ++ show m
 --   so that we can move the instruction-pointer to the next one
 instructionLength :: Instruction -> Int
 instructionLength Halt = 1
-instructionLength (Add _ _ _) = 4
-instructionLength (Mult _ _ _) = 4
-instructionLength (Input _) = 2
-instructionLength (Output _) = 2
-instructionLength (JumpIfTrue _ _) = 3
-instructionLength (JumpIfFalse _ _) = 3
-instructionLength (LessThan _ _ _) = 4
-instructionLength (Equals _ _ _) = 4
+instructionLength Add{} = 4
+instructionLength Mult{} = 4
+instructionLength Input{} = 2
+instructionLength Output{} = 2
+instructionLength JumpIfTrue{} = 3
+instructionLength JumpIfFalse{} = 3
+instructionLength LessThan{} = 4
+instructionLength Equals{} = 4
 
 
 ----------------------------------------------------------------------
@@ -123,14 +122,14 @@ showProgram prg =
     Right listing -> unlines $ map showInstr listing
   where
     showInstr Halt = "HLT"
-    showInstr (Add a b c) = "ADD " ++ intercalate " " [ showParam p | p <- [a,b,c] ]
-    showInstr (Mult a b c) = "MUL " ++ intercalate " " [ showParam p | p <- [a,b,c] ]
-    showInstr (Input a) = "INP " ++ intercalate " " [ showParam p | p <- [a] ]
-    showInstr (Output a) = "OUT " ++ intercalate " " [ showParam p | p <- [a] ]
-    showInstr (JumpIfTrue a b) = "JNZ " ++ intercalate " " [ showParam p | p <- [a,b] ]
-    showInstr (JumpIfFalse a b) = "JZ " ++ intercalate " " [ showParam p | p <- [a,b] ]
-    showInstr (LessThan a b c) = "LT " ++ intercalate " " [ showParam p | p <- [a,b,c] ]
-    showInstr (Equals a b c) = "EQ " ++ intercalate " " [ showParam p | p <- [a,b,c] ]
+    showInstr (Add a b c) = "ADD " ++ unwords [ showParam p | p <- [a,b,c] ]
+    showInstr (Mult a b c) = "MUL " ++ unwords [ showParam p | p <- [a,b,c] ]
+    showInstr (Input a) = "INP " ++ unwords [ showParam p | p <- [a] ]
+    showInstr (Output a) = "OUT " ++ unwords [ showParam p | p <- [a] ]
+    showInstr (JumpIfTrue a b) = "JNZ " ++ unwords [ showParam p | p <- [a,b] ]
+    showInstr (JumpIfFalse a b) = "JZ " ++ unwords [ showParam p | p <- [a,b] ]
+    showInstr (LessThan a b c) = "LT " ++ unwords [ showParam p | p <- [a,b,c] ]
+    showInstr (Equals a b c) = "EQ " ++ unwords [ showParam p | p <- [a,b,c] ]
     showParam (Parameter PositionMode v) = "&" ++ show v
     showParam (Parameter ImmediateMode v) = show v
 
