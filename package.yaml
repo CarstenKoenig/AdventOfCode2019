@@ -16,6 +16,7 @@ dependencies:
   - containers
   - megaparsec
   - mtl
+  - stm
 
 ghc-options:
   - -Wall
