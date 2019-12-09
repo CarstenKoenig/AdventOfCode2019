@@ -10,3 +10,4 @@ This is my go on *2019* installment of [Advent of Code](https://adventofcode.com
 - Solution to [Day 6](https://adventofcode.com/2019/day/6) is [here](./src/Day6/Solution.hs)
 - Solution to [Day 7](https://adventofcode.com/2019/day/7) is [here](./src/Day7/Solution.hs)
 - Solution to [Day 8](https://adventofcode.com/2019/day/8) is [here](./src/Day8/Solution.hs)
+- Solution to [Day 9](https://adventofcode.com/2019/day/9) is [here](./src/Day9/Solution.hs)

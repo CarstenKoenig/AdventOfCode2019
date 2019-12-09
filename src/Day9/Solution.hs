@@ -1,33 +1,37 @@
 module Day9.Solution where
 
-import           CommonParsers
-import           ConsoleTests
+import           Control.Concurrent.STM (atomically)
+import qualified Control.Concurrent.STM.TQueue as TQ
+import           Data.Int (Int64)
+import           IntCodeStm
 
 
-type Input = String
+type Input = Program Int64
 
 run :: IO ()
 run = do
   putStrLn "DAY 9"
 
-  inp <- loadInput
+  prg <- loadInput
 
-  let res1 = part1 inp
+  res1 <- runBoost prg 1
   putStrLn $ "\t Part 1: " ++ show res1
 
-  let res2 = part2 inp
+  res2 <- runBoost prg 2
   putStrLn $ "\t Part 2: " ++ show res2
 
   putStrLn "---\n"
 
 
-part1 :: Input -> Int
-part1 inp = undefined
-
-
-part2 :: Input -> Int
-part2 inp = undefined
+runBoost :: Input -> Int64 -> IO (Either String [Int64])
+runBoost prg inp = do
+  output <- TQ.newTQueueIO
+  let c = createComputer "BOOST" prg (pure inp) (TQ.writeTQueue output)
+  res <- runComputer c
+  case res of
+    Left err -> pure $ Left err
+    Right () -> Right <$> atomically (TQ.flushTQueue output)
 
 
 loadInput :: IO Input
-loadInput = readFile "./src/Day9/input.txt"
+loadInput = parseProgram <$> readFile "./src/Day9/input.txt"

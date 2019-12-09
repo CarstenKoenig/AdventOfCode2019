@@ -10,7 +10,7 @@ import           Data.Maybe (mapMaybe)
 import           IntCodeStm
 
 
-type Input = Program
+type Input = Program Int
 
 run :: IO ()
 run = do
@@ -27,13 +27,13 @@ run = do
   putStrLn "---\n"
 
 
-part1 :: Program -> IO Int
+part1 :: Input -> IO Int
 part1 prg = do
   results <- mapM (runStages prg False) (permutations [0..4])
   pure $ maximum $ mapMaybe (either (const Nothing) Just) results
 
 
-part2 :: Program -> IO Int
+part2 :: Input -> IO Int
 part2 prg = do
   results <- mapM (runStages prg True) (permutations [5..9])
   pure $ maximum $ mapMaybe (either (const Nothing) Just) results
@@ -48,7 +48,7 @@ part2 prg = do
 --   updated on every output of E
 --   if the second parameter is True E's output is send
 --   to A again (for part 2)
-runStages :: Program -> Bool -> [Int] -> IO (Either String Int)
+runStages :: Input -> Bool -> [Int] -> IO (Either String Int)
 runStages prg connectE2A [a,b,c,d,e] = do
   output <- TV.newTVarIO 0 :: IO (TV.TVar Int)
   input <- setupChannel [a,0]
