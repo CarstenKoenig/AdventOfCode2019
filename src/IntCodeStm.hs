@@ -26,7 +26,7 @@ import           Control.Monad.STM (STM)
 import           Control.Monad.Trans (lift)
 import qualified Data.Map.Strict as Map
 import           Data.Map.Strict (Map)
-import Debug.Trace (trace)
+import Debug.Trace (trace, traceM)
 
 
 type Address adr = adr
@@ -311,14 +311,14 @@ memoryBounds = do
 
 -- | pops the next value from the input-stack and returns it
 --   if no more values are on it fails with an error
-readInput :: IntCodeM n n
+readInput :: Show n => IntCodeM n n
 readInput = do
   receive <- State.gets input
   lift $ lift $ STM.atomically receive
 
 
 -- | pushes the value to the output-stack
-writeOutput :: n -> IntCodeM n ()
+writeOutput :: Show n => n -> IntCodeM n ()
 writeOutput out = do
   send <- State.gets output
   lift $ lift $ STM.atomically $ send out

@@ -2,7 +2,7 @@ module Day3.Solution (run) where
 
 import           CommonParsers
 import           ConsoleTests
-import           Coords
+import           Coords (Coord, Dist, manhDist)
 import           Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import qualified Text.Megaparsec as P
