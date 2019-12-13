@@ -26,7 +26,6 @@ import           Control.Monad.STM (STM)
 import           Control.Monad.Trans (lift)
 import qualified Data.Map.Strict as Map
 import           Data.Map.Strict (Map)
-import Debug.Trace (trace, traceM)
 
 
 type Address adr = adr
@@ -135,7 +134,7 @@ executeProgram = do
 runInstruction :: (Eq n, Integral n, Show n) => Instruction n -> IntCodeM n ()
 runInstruction Halt =
   -- no-op on halt
-  pure $ seq (trace "HALT" ()) ()
+  pure ()
 runInstruction (Add locA locB tgt) = do
   -- add the value in from the first two given parameters and
   -- write the result to the third's address (only valid if it is in 'PositionMode')
