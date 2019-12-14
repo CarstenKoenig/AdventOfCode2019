@@ -20,11 +20,12 @@ run = do
   putStrLn $ "DAY " ++ show dayNr
 
   inp <- loadInput
+  let lu = mkLookup inp
 
-  let res1 = part1 inp
+  let res1 = part1 lu
   putStrLn $ "\t Part 1: " ++ show res1
 
-  let res2 = part2 inp res1
+  let res2 = part2 lu res1
   putStrLn $ "\t Part 2: " ++ show res2
 
   putStrLn "---\n"
@@ -34,6 +35,10 @@ run = do
 -- Modeling
 
 type Input = [Formula]
+
+-- | wraps the main cost-center (finding formulas) into
+--   a map - took around 1s away from the runtime
+type Lookup = MS.Map Chemical Formula
 
 data Formula = Formula
   { f_ingredients    :: [Ingredient]
@@ -49,43 +54,43 @@ type Amount = Int
 
 
 -- | calculates the amount of ORE needed for 1 FUEL
-part1 :: Input -> Amount
-part1 inp = minimumNeededOre inp 1
+part1 :: Lookup -> Amount
+part1 lu = minimumNeededOre lu 1
 
 
 -- | folds the tree using 'neededFor' till ORE
 --   is found (the rest in the map will be left-over ingredients)
-minimumNeededOre :: Input -> Amount -> Amount
-minimumNeededOre inp = go . MS.singleton "FUEL"
+minimumNeededOre :: Lookup -> Amount -> Amount
+minimumNeededOre lu = go . MS.singleton "FUEL"
   where
   go :: MS.Map Chemical Amount -> Amount
   go ns =
     case MS.lookup "ORE" ns of
       Just nr -> nr
-      Nothing -> go $ neededFor inp ns
+      Nothing -> go $ neededFor lu ns
 
 
 -- | collect the pre-products in the given map that share the
 --   same maximum distance to ORE - this way we can stepwise
 --   collect ingredients on the same level in the tree
-neededFor :: Input -> MS.Map Chemical Amount -> MS.Map Chemical Amount
-neededFor inp ns =
+neededFor :: Lookup -> MS.Map Chemical Amount -> MS.Map Chemical Amount
+neededFor lu ns =
   MS.unionsWith (+) $ map step ls
   where
   ls = MS.toList ns
-  maxDist = maximum $ map (distToOre inp . fst) ls
+  maxDist = maximum $ map (distToOre lu . fst) ls
   step (c,a)
-    | distToOre inp c == maxDist = neededForSingle inp a c
-    | otherwise                  = MS.singleton c a
+    | distToOre lu c == maxDist = neededForSingle lu a c
+    | otherwise                 = MS.singleton c a
 
 
 -- | collects pre-products and their amounts needed
 --   to produce the given chemical with given amount
 --   ORE is never produced so we can shortcut this
-neededForSingle :: Input -> Amount -> Chemical -> MS.Map Chemical Amount
+neededForSingle :: Lookup -> Amount -> Chemical -> MS.Map Chemical Amount
 neededForSingle _ needed "ORE" = MS.singleton "ORE" needed
-neededForSingle inp needed chem =
-  let Formula{..} = producing inp chem
+neededForSingle lu needed chem =
+  let Formula{..} = producing lu chem
       factor = calcFactor needed f_product_amount
   in MS.fromList [(ing, factor*amt) | (ing, amt) <- f_ingredients ]
   where
@@ -97,24 +102,17 @@ neededForSingle inp needed chem =
 -- | how many formulas must be used to get from ore to the chemical?
 --   this should likely be memoized but the problem is small enough
 --   to not make this extremely costy
-distToOre :: Input -> Chemical -> Int
+distToOre :: Lookup -> Chemical -> Int
 distToOre _ "ORE" = 0
-distToOre inp chem =
-  1 + maximum [ distToOre inp c | (c,_) <- f_ingredients $ producing inp chem ]
+distToOre lu chem =
+  1 + maximum [ distToOre lu c | (c,_) <- f_ingredients $ producing lu chem ]
 
 
 -- | looks in the input for *the* single formula producing the given chemical
 --   this assumes, that there is ever only one formula - if not this algorithm
 --   here would not work anyways, as an optimizing search would be require
-producing :: Input -> Chemical -> Formula
-producing inp chem =
-  single [ f | f@Formula{..} <- inp, f_product == chem ]
-  where
-    single :: [a] -> a
-    single []  = error $ "shit - nothing is producing " ++ chem
-    single [x] = x
-    single _   = error $ "shit - multiple formulas are producing " ++ chem
-
+producing :: Lookup -> Chemical -> Formula
+producing lu chem = lu MS.! chem
 
 ----------------------------------------------------------------------
 -- Part 2
@@ -127,17 +125,17 @@ maxOreInCargo = 1000000000000
 -- | iteratively uses 'goUp' to do a quick'ish
 --   search of the problem space
 --   uses Part1's result for a quick starting guess
-part2 :: Input -> Int -> Int
-part2 inp p1 = go (maxOreInCargo `div` p1)
+part2 :: Lookup -> Int -> Int
+part2 lu p1 = go (maxOreInCargo `div` p1)
   where
-  go n = maybe n go $ goUp inp n
+  go n = maybe n go $ goUp lu n
 
 
 -- | checks inputs in order 'start' + 1, 'start' + 2, 'start' + 4, 'start' + 8 ...
 --   till more ore is needed than 'maxOreInCargo'
-goUp :: Input -> Amount -> Maybe Amount
-goUp inp start =
-  fmap fst $ safeLast $ takeWhile ((<= maxOreInCargo) . snd) $ [ (i, amt) | i <- tests, let amt = minimumNeededOre inp i ]
+goUp :: Lookup -> Amount -> Maybe Amount
+goUp lu start =
+  fmap fst $ safeLast $ takeWhile ((<= maxOreInCargo) . snd) $ [ (i, amt) | i <- tests, let amt = minimumNeededOre lu i ]
   where
   safeLast [] = Nothing
   safeLast xs = Just $ last xs
@@ -147,6 +145,13 @@ goUp inp start =
 
 ----------------------------------------------------------------------
 -- Loading / Parsing
+
+-- | creates a lookup map to quickly get a formula producing a chemical
+--   this *assumes* that only one formula produces a chemical
+--   (which is true for the problems presented)
+mkLookup :: Input -> Lookup
+mkLookup inp = MS.fromList $ [ (f_product,f) | f@Formula{..} <- inp ]
+
 
 loadInput :: IO Input
 loadInput = map parseFormula . lines <$> readFile ("./src/Day" ++ show dayNr ++ "/input.txt")
