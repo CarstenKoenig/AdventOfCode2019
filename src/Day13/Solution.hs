@@ -3,8 +3,6 @@
 module Day13.Solution where
 
 import           Coords
-import qualified Data.Map.Strict as M
-import           Data.Map.Strict (Map)
 import           IntCodePure
 
 
@@ -40,8 +38,6 @@ data Output
   | WaitForInput (Int -> Continuation Int)
   | Stopped
 
-
-type Display = Map Coord TileId
 
 -- | stuff that goes on on display
 data TileId
@@ -121,27 +117,24 @@ runGame prg =
   -- init the game and set the coin-"counter" to 2 ... want to play for free
   let cont = initComputer (2 : tail prg)
   -- start the loop
-  in go cont M.empty 0 Nothing Nothing
+  in go cont 0 Nothing Nothing
   where
-    -- | the main loop - keeps track of the display, score, the paddle and ball position
-    go :: Continuation Int -> Display -> Score -> Maybe Coord -> Maybe Coord -> Score
+    -- | the main loop - keeps track of the score, the paddle and ball position
+    --   as we don't output the screen we don't have to Care about the actual Display
+    go :: Continuation Int -> Score -> Maybe Coord -> Maybe Coord -> Score
     -- if both ball and paddle positions are known
-    go cont display score paddleP ballP =
+    go cont score paddleP ballP =
       case getOutput cont of
         Stopped -> score
-        Score newScore cont' -> go cont' display newScore paddleP ballP
-        WaitForInput inp2cont -> go (inp2cont $ getJoystick paddleP ballP) display score paddleP ballP
-        Draw coord tileId cont' ->
-          -- update paddle or ball pos if redrawn
-          -- the game will only clear and redraw
-          -- stuff that changed!
-          let (paddleP', ballP') =
-                case tileId of
-                  Ball -> (paddleP, Just coord)
-                  Paddle -> (Just coord, ballP)
-                  _ -> (paddleP, ballP)
-          -- continue with updated display, paddle and ball positions
-          in go cont' (M.insert coord tileId display) score paddleP' ballP'
+        Score newScore cont' -> go cont' newScore paddleP ballP
+        WaitForInput inp2cont -> go (inp2cont $ getJoystick paddleP ballP) score paddleP ballP
+        -- update paddle or ball pos if redrawn
+        -- the game will only clear and redraw
+        -- stuff that changed!
+        Draw coord Ball cont' -> go cont' score paddleP (Just coord)
+        Draw coord Paddle cont' -> go cont' score (Just coord) ballP
+        -- all other output is irrelevant
+        Draw _ _ cont' -> go cont' score paddleP ballP
     getJoystick (Just (pX, _)) (Just (bX, _))
       | pX > bX = fromJoystick JoyLeft
       | pX < bX = fromJoystick JoyRight
