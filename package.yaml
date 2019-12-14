@@ -13,11 +13,14 @@ extra-source-files:
 
 dependencies:
   - base >= 4.7 && < 5
+  - astar
   - array
   - containers
+  - hashable
   - megaparsec
   - mtl
   - stm
+  - unordered-containers
 
 ghc-options:
   - -Wall

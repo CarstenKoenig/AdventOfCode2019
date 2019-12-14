@@ -1,5 +1,6 @@
 module CommonParsers 
   ( Parser
+  , nameP
   , numberP
   , boolP
   , brace
@@ -18,6 +19,10 @@ numberP :: Parser Int
 numberP = P.label "number" $ P.hidden $
   read <$> P.some PC.numberChar
 
+
+nameP :: Parser String
+nameP = P.label "name" $ P.hidden $
+  P.some PC.alphaNumChar
 
 boolP :: Parser Bool
 boolP = P.label "boolean" $ P.hidden $ P.choice
