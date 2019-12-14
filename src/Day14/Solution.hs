@@ -25,7 +25,7 @@ run = do
   let res1 = part1 lu
   putStrLn $ "\t Part 1: " ++ show res1
 
-  let res2 = part2 lu res1
+  let res2 = part2 lu
   putStrLn $ "\t Part 2: " ++ show res2
 
   putStrLn "---\n"
@@ -122,25 +122,24 @@ maxOreInCargo :: Amount
 maxOreInCargo = 1000000000000
 
 
--- | iteratively uses 'goUp' to do a quick'ish
---   search of the problem space
---   uses Part1's result for a quick starting guess
-part2 :: Lookup -> Int -> Int
-part2 lu p1 = go (maxOreInCargo `div` p1)
+-- | conducts a binary search between 0 and maxOreInCarge
+--   (assuming you need at least one ORE per FUEL)
+--   to get the maximum amount of producable FUEL
+part2 :: Lookup -> Amount
+part2 lu = go 0 maxOreInCargo
   where
-  go n = maybe n go $ goUp lu n
-
-
--- | checks inputs in order 'start' + 1, 'start' + 2, 'start' + 4, 'start' + 8 ...
---   till more ore is needed than 'maxOreInCargo'
-goUp :: Lookup -> Amount -> Maybe Amount
-goUp lu start =
-  fmap fst $ safeLast $ takeWhile ((<= maxOreInCargo) . snd) $ [ (i, amt) | i <- tests, let amt = minimumNeededOre lu i ]
-  where
-  safeLast [] = Nothing
-  safeLast xs = Just $ last xs
-  tests = [ start + p | p <- ps ]
-  ps = 1 : map (2 *) ps
+  go lo hi
+    -- the will find the first value where there is
+    -- NOT enough ORE to produce the fuel - therefore
+    -- we need to subtract one from it
+    | lo >= hi = lo-1
+    | otherwise =
+      let
+        mid = (hi + lo) `div` 2
+        midVal = minimumNeededOre lu mid
+      in case () of
+           () | midVal < maxOreInCargo -> go (mid+1) hi
+              | otherwise -> go lo mid
 
 
 ----------------------------------------------------------------------
