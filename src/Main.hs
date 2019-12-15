@@ -14,10 +14,14 @@ import qualified Day11.Solution as D11
 import qualified Day12.Solution as D12
 import qualified Day13.Solution as D13
 import qualified Day14.Solution as D14
+import qualified Day15.Solution as D15
 
 
 main :: IO ()
-main = do
+main = D15.run
+
+main' :: IO ()
+main' = do
   D14.run
   D13.run
   D12.run
