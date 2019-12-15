@@ -18,10 +18,8 @@ import qualified Day15.Solution as D15
 
 
 main :: IO ()
-main = D15.run
-
-main' :: IO ()
-main' = do
+main = do
+  D15.run
   D14.run
   D13.run
   D12.run
