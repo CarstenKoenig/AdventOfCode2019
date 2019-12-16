@@ -17,3 +17,4 @@ This is my go on *2019* installment of [Advent of Code](https://adventofcode.com
 - Solution to [Day 13](https://adventofcode.com/2019/day/13) is [here](./src/Day13/Solution.hs)
 - Solution to [Day 14](https://adventofcode.com/2019/day/14) is [here](./src/Day14/Solution.hs)
 - Solution to [Day 15](https://adventofcode.com/2019/day/15) is [here](./src/Day15/Solution.hs)
+- Solution to [Day 16](https://adventofcode.com/2019/day/16) is [here](./src/Day16/Solution.hs)

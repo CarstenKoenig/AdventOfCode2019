@@ -15,10 +15,12 @@ import qualified Day12.Solution as D12
 import qualified Day13.Solution as D13
 import qualified Day14.Solution as D14
 import qualified Day15.Solution as D15
+import qualified Day16.Solution as D16
 
 
 main :: IO ()
 main = do
+  D16.run
   D15.run
   D14.run
   D13.run
