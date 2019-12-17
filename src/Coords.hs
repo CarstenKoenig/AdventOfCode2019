@@ -7,7 +7,7 @@ data Direction
   | DirRight
   | DirDown
   | DirLeft
-  deriving Show
+  deriving (Show, Eq)
 
 -- | changes a coordinate by moving in a direction
 move :: Direction -> Coord -> Coord
