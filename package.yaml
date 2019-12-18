@@ -19,12 +19,14 @@ dependencies:
   - hashable
   - megaparsec
   - mtl
+  - pqueue
   - stm
   - unordered-containers
 
 ghc-options:
   - -Wall
   - -Wno-unused-top-binds
+  - -O
 
 executables:
   AdventOfCode2019:

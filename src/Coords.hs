@@ -2,6 +2,10 @@ module Coords where
 
 type Coord = (Int, Int)
 
+neighbours :: Coord -> [Coord]
+neighbours (x,y) =
+  [ (x-1,y), (x,y-1), (x+1,y), (x,y+1) ]
+
 data Direction
   = DirUp
   | DirRight
