@@ -20,16 +20,17 @@ import qualified Day17.Solution as D17
 import qualified Day18.Solution as D18
 import qualified Day19.Solution as D19
 import qualified Day20.Solution as D20
+import qualified Day21.Solution as D21
 
 
 main :: IO ()
 main = do
   D20.run
-  D19.run
   putStrLn "done"
 
 main' :: IO ()
 main' = do
+  D21.run
   D20.run
   D19.run
   D18.run
