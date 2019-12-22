@@ -23,3 +23,4 @@ This is my go on *2019* installment of [Advent of Code](https://adventofcode.com
 - Solution to [Day 19](https://adventofcode.com/2019/day/19) is [here](./src/Day19/Solution.hs)
 - Solution to [Day 20](https://adventofcode.com/2019/day/20) is [here](./src/Day20/Solution.hs)
 - Solution to [Day 21](https://adventofcode.com/2019/day/21) is [here](./src/Day21/Solution.hs)
+- Solution to [Day 22](https://adventofcode.com/2019/day/22) is [here](./src/Day22/Solution.hs)
