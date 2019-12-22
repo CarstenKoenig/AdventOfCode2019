@@ -15,7 +15,7 @@ import qualified Text.Megaparsec.Char as PC
 
 type Parser = Parsec Void String
 
-numberP :: Parser Int
+numberP :: (Read a, Num a) => Parser a
 numberP = P.label "number" $ P.hidden $
   read <$> P.some (PC.char '-' <|> PC.numberChar)
 
