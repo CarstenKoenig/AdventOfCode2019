@@ -17,7 +17,7 @@ type Parser = Parsec Void String
 
 numberP :: Parser Int
 numberP = P.label "number" $ P.hidden $
-  read <$> P.some PC.numberChar
+  read <$> P.some (PC.char '-' <|> PC.numberChar)
 
 
 nameP :: Parser String

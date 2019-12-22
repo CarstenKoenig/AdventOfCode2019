@@ -24,13 +24,13 @@ import qualified Day21.Solution as D21
 import qualified Day22.Solution as D22
 
 
-main' :: IO ()
-main' = do
+main :: IO ()
+main = do
   D22.run
   putStrLn "done"
 
-main :: IO ()
-main = do
+main' :: IO ()
+main' = do
   D21.run
   D20.run
   D19.run
