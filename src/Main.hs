@@ -28,7 +28,7 @@ import qualified Day24.Solution as D24
 
 main :: IO ()
 main = do
-  D23.run
+  D24.run
   putStrLn "done"
 
 main' :: IO ()
