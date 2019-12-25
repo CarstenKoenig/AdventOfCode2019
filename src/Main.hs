@@ -24,37 +24,34 @@ import qualified Day21.Solution as D21
 import qualified Day22.Solution as D22
 import qualified Day23.Solution as D23
 import qualified Day24.Solution as D24
+import qualified Day25.Solution as D25
 
 
 main :: IO ()
 main = do
-  D24.run
-  putStrLn "done"
-
-main' :: IO ()
-main' = do
-  D24.run
-  D23.run
-  D22.run
-  D21.run
-  D20.run
-  D19.run
-  D18.run
-  D17.run
-  D16.run
-  D15.run
-  D14.run
-  D13.run
-  D12.run
-  D11.run
-  D10.run
-  D9.run
-  D8.run
-  D7.run
-  D6.run
-  D5.run
-  D4.run
-  D3.run
-  D2.run
   D1.run
-  putStrLn "done"
+  D2.run
+  D3.run
+  D4.run
+  D5.run
+  D6.run
+  D7.run
+  D8.run
+  D9.run
+  D10.run
+  D11.run
+  D12.run
+  D13.run
+  D14.run
+  D15.run
+  D16.run
+  D17.run
+  D18.run
+  D19.run
+  D20.run
+  D21.run
+  D22.run
+  D23.run
+  D24.run
+  putStrLn "done - please play 25 yourself :D"
+  D25.run
